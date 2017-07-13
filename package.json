@@ -642,11 +642,11 @@
         "lint": "tslint -p tslint.json --type-check **/*.ts"
     },
     "devDependencies": {
-        "mocha": "^3.1.2",
-        "typescript": "^2.0.7",
-        "vscode": "^1.0.3",
-        "@types/mocha": "^2.2.32",
-        "@types/node": "^6.0.40"
+        "@types/mocha": "^2.2.41",
+        "@types/node": "^6.0.81",
+        "mocha": "^3.4.2",
+        "typescript": "^2.4.1",
+        "vscode": "^1.1.4"
     },
     "dependencies": {
         "clipboardy": "^1.1.4"

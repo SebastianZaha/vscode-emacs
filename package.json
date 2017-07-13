@@ -88,6 +88,11 @@
             },
             {
                 "key": "ctrl+p",
+                "command": "emacs.cursorUp",
+                "when": "terminalFocus"
+            },
+            {
+                "key": "ctrl+p",
                 "command": "closeFindWidget",
                 "when": "editorFocus && findWidgetVisible"
             },
@@ -145,6 +150,11 @@
                 "key": "ctrl+e",
                 "command": "emacs.cursorEnd",
                 "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+e",
+                "command": "emacs.cursorEnd",
+                "when": "terminalFocus"
             },
             {
                 "key": "ctrl+e",

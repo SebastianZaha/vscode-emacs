@@ -637,6 +637,10 @@
                 "key": "ctrl+x ctrl+u",
                 "command": "editor.action.transformToUppercase",
                 "when": "editorTextFocus && !editorReadonly"
+            },
+            {
+                "key": "alt+backspace",
+                "command": "deleteWordLeft"
             }
         ]
     },

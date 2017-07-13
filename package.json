@@ -337,7 +337,7 @@
             },
             {
                 "key": "ctrl+j",
-                "command": "editor.action.insertLineAfter",
+                "command": "emacs.C-j",
                 "when": "editorTextFocus && !editorReadonly"
             },
             {

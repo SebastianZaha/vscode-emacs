@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import {Editor} from './editor';
 
 export class Operation {
@@ -29,6 +30,11 @@ export class Operation {
             "C-/": () => {
                 this.editor.undo();
                 this.editor.setStatusBarMessage("Undo!");
+            },
+            'C-j': () => {
+                vscode.commands.executeCommand("lineBreakInsert");
+                vscode.commands.executeCommand("emacs.cursorHome");
+                vscode.commands.executeCommand("emacs.cursorDown");
             },
             'C-g': () => {
                 this.editor.setStatusBarMessage("Quit");

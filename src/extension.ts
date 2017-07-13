@@ -10,7 +10,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
             // Edit
             "C-k", "C-w", "M-w", "C-y", "C-x_C-o",
-            "C-x_u", "C-/", "C-S_bs",
+            "C-x_u", "C-/", "C-j", "C-S_bs",
 
             // Navigation
             "C-l",
@@ -50,7 +50,7 @@ export function activate(context: vscode.ExtensionContext): void {
 		if (!vscode.window.activeTextEditor) {
 			return;
 		}
-		op.onType(args.text);        
+		op.onType(args.text);
     }));
 
     initMarkMode(context);

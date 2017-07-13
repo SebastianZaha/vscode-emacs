@@ -43,7 +43,7 @@ export class Editor {
 	}
 
 	setStatusBarPermanentMessage(text: string): vscode.Disposable {
-		return vscode.window.setStatusBarMessage(text); 
+		return vscode.window.setStatusBarMessage(text);
 	}
 
 	getSelectionRange(): vscode.Range {
@@ -81,7 +81,7 @@ export class Editor {
 			isOnLastLine = Editor.isOnLastLine()
 
 		// Move down an entire line (not just the wrapped part), and to the beginning.
-		await vscode.commands.executeCommand("cursorMove", { to: "down", by: "line", select: false })		
+		await vscode.commands.executeCommand("cursorMove", { to: "down", by: "line", select: false })
 		if (!isOnLastLine) {
 			await vscode.commands.executeCommand("cursorMove", { to: "wrappedLineStart" })
 		}
@@ -168,11 +168,11 @@ export class Editor {
 		}
 		selection = new vscode.Selection(nextLine, nextLine);
 		vscode.window.activeTextEditor.selection = selection;
-		
+
 		for (let line = selection.start.line;
 				line < doc.lineCount - 1  && doc.lineAt(line).range.isEmpty;
 		    	++line) {
-			
+
 			await vscode.commands.executeCommand("deleteRight")
 		}
 		vscode.window.activeTextEditor.selection = new vscode.Selection(anchor, anchor)
@@ -188,7 +188,7 @@ export class Editor {
 
 	setRMode(): void {
 		this.setStatusBarPermanentMessage("C-x r");
-		this.keybindProgressMode = KeybindProgressMode.RMode; 
+		this.keybindProgressMode = KeybindProgressMode.RMode;
 		return;
 	}
 
@@ -283,7 +283,7 @@ export class Editor {
 				text: text
 			});
 		}
-		return;    
+		return;
 	}
 
 	saveTextToRegister(registerName: string): void {
@@ -301,7 +301,7 @@ export class Editor {
 	}
 
 	restoreTextFromRegister(registerName: string): void {
-		vscode.commands.executeCommand("emacs.exitMarkMode"); // emulate Emacs 
+		vscode.commands.executeCommand("emacs.exitMarkMode"); // emulate Emacs
 		let obj : RegisterContent = this.registersStorage[registerName];
 		if (null === obj) {
 			this.setStatusBarMessage("Register does not contain text.");
@@ -314,14 +314,14 @@ export class Editor {
 					editBuilder.insert(this.getSelection().active, content);
 				});
 			}
-		}  
+		}
 		return;
 	}
 
 	deleteLine() : void {
 		vscode.commands.executeCommand("emacs.exitMarkMode"); // emulate Emacs
 		vscode.commands.executeCommand("editor.action.deleteLines");
-	}   
+	}
 
 	scrollLineToCenter() {
 		const editor = vscode.window.activeTextEditor

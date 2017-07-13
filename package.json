@@ -336,6 +336,11 @@
                 "when": "editorFocus && findWidgetVisible"
             },
             {
+                "key": "ctrl+m",
+                "command": "emacs.C-j",
+                "when": "editorTextFocus && !editorReadonly"
+            },
+            {
                 "key": "ctrl+j",
                 "command": "emacs.C-j",
                 "when": "editorTextFocus && !editorReadonly"

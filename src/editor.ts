@@ -329,4 +329,10 @@ export class Editor {
 		const range = new vscode.Range(selection.start, selection.end)
 		editor.revealRange(range, vscode.TextEditorRevealType.InCenter)
 	}
+
+	breakLine() {
+		vscode.commands.executeCommand("lineBreakInsert");
+		vscode.commands.executeCommand("emacs.cursorHome");
+		vscode.commands.executeCommand("emacs.cursorDown");
+	}
 }

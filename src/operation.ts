@@ -14,7 +14,7 @@ export class Operation {
                 this.editor.exitMarkMode()
             },
             'C-k': () => {
-                this.editor.kill();
+                this.editor.killForward();
             },
             'C-w': () => {
                 this.editor.cut()

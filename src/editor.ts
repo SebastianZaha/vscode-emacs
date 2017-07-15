@@ -90,7 +90,7 @@ export class Editor {
 	}
 
 	// Kill to end of line
-	kill(): void {
+	killForward(): void {
 		// Ignore whatever we have selected before
 		vscode.commands.executeCommand("emacs.exitMarkMode")
 		vscode.commands.executeCommand("cursorMove", {

@@ -306,6 +306,11 @@
                 "when": "editorFocus && findWidgetVisible"
             },
             {
+                "key": "alt+0 ctrl+k",
+                "command": "emacs.M-0_C-k",
+                "when": "editorTextFocus && !editorReadonly"
+            },
+            {
                 "key": "ctrl+k",
                 "command": "emacs.C-k",
                 "when": "editorTextFocus && !editorReadonly"

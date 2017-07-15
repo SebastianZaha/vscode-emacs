@@ -16,6 +16,9 @@ export class Operation {
             'C-k': () => {
                 this.editor.killForward();
             },
+            'M-0_C-k': () => {
+                this.editor.killBackward();
+            },
             'C-w': () => {
                 this.editor.cut()
             },

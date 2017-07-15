@@ -8,8 +8,8 @@ export function activate(context: vscode.ExtensionContext): void {
             "C-g", "enterMarkMode", "exitMarkMode",
 
             // Edit
-            "C-k", "C-w", "M-w", "C-y", "C-x_C-o",
-            "C-x_u", "C-/", "C-j", "C-S_bs",
+            "C-k", "M-0_C-k", "C-w", "M-w", "C-y",
+            "C-x_C-o", "C-x_u", "C-/", "C-j", "C-S_bs",
 
             // Navigation
             "C-l",

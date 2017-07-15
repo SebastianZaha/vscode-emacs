@@ -93,6 +93,7 @@ export class Editor {
 	killForward(): void {
 		// Ignore whatever we have selected before
 		vscode.commands.executeCommand("emacs.exitMarkMode")
+		// move cursor to the end of the line and select the text
 		vscode.commands.executeCommand("cursorMove", {
 			to:"wrappedLineEnd",
 			select:true
@@ -100,6 +101,20 @@ export class Editor {
 		// editor.action.clipboardCutAction is too slow!
 		vscode.commands.executeCommand("editor.action.clipboardCopyAction");
 		vscode.commands.executeCommand("deleteAllRight");
+	}
+
+	// Kill to beginning of line
+	killBackward(): void {
+		// Ignore whatever we have selected before
+		vscode.commands.executeCommand("emacs.exitMarkMode")
+		// move cursor to the beginning of the line and select the text
+		vscode.commands.executeCommand("cursorMove", {
+			to:"wrappedLineStart",
+			select:true
+		})
+		// editor.action.clipboardCutAction is too slow!
+		vscode.commands.executeCommand("editor.action.clipboardCopyAction");
+		vscode.commands.executeCommand("deleteAllLeft");
 	}
 
 	copy(): void {

@@ -16,6 +16,7 @@ export class Editor {
 	private registersStorage: { [key:string] : RegisterContent; };
 	private lastKill: vscode.Position // if kill position stays the same, append to clipboard
 	private justDidKill: boolean
+	private positions: Array<vscode.Position> = new Array();
 
 	constructor() {
 		this.keybindProgressMode = KeybindProgressMode.None
@@ -36,6 +37,30 @@ export class Editor {
 
 	static isOnLastLine(): boolean {
 		return vscode.window.activeTextEditor.selection.active.line == vscode.window.activeTextEditor.document.lineCount - 1
+	}
+
+	apendPosition(position: vscode.Position) : void {
+		this.positions.push(position)
+	}
+
+	goBack() : void {
+		if (this.positions.length > 0) {
+			var jumpPosition = this.positions.pop()
+			var currentPosition = vscode.window.activeTextEditor.selection.active;
+
+			if (jumpPosition.line - currentPosition.line != 0) {
+				vscode.commands.executeCommand("cursorMove", {
+					to:"down",
+					value:jumpPosition.line - currentPosition.line
+				})
+			}
+			if (jumpPosition.character - currentPosition.character != 0) {
+				vscode.commands.executeCommand("cursorMove", {
+					to:"right",
+					value:jumpPosition.character - currentPosition.character
+				})
+			}
+		}
 	}
 
 	setStatusBarMessage(text: string): vscode.Disposable {

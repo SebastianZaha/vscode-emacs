@@ -1,7 +1,7 @@
 import {Editor} from './editor';
 
 export class Operation {
-    private editor: Editor;
+    public editor: Editor;
     private commandList: { [key: string]: (...args: any[]) => any, thisArgs?: any } = {};
 
     constructor() {
@@ -44,6 +44,9 @@ export class Operation {
             },
             'C-l': () => {
                 this.editor.scrollLineToCenter()
+            },
+            'C-u_C-spc': () => {
+                this.editor.goBack()
             }
         };
     }

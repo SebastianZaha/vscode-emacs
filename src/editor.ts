@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as clip from 'clipboardy'
 import {RegisterContent, RectangleContent, RegisterKind} from './registers';
 
 enum KeybindProgressMode {
@@ -16,8 +15,8 @@ export class Editor {
 	private registersStorage: { [key:string] : RegisterContent; };
 	private lastKill: vscode.Position // if kill position stays the same, append to clipboard
 	private justDidKill: boolean
-	private static inMarkMode : boolean
-	private static markHasMoved : boolean
+	private static inMarkMode : boolean = false
+	private static markHasMoved : boolean = false
 
 	static getInMarkMode() : boolean {
 		return Editor.inMarkMode;
@@ -91,39 +90,16 @@ export class Editor {
 	}
 
 	// Kill to end of line
-	async kill(): Promise<boolean> {
+	kill(): void {
 		// Ignore whatever we have selected before
-		await vscode.commands.executeCommand("emacs.exitMarkMode")
-
-		let startPos = this.getCurrentPos(),
-			isOnLastLine = Editor.isOnLastLine()
-
-		// Move down an entire line (not just the wrapped part), and to the beginning.
-		await vscode.commands.executeCommand("cursorMove", { to: "down", by: "line", select: false })
-		if (!isOnLastLine) {
-			await vscode.commands.executeCommand("cursorMove", { to: "wrappedLineStart" })
-		}
-
-		let endPos = this.getCurrentPos(),
-			range = new vscode.Range(startPos, endPos),
-			txt = vscode.window.activeTextEditor.document.getText(range)
-
-		// If there is something other than whitespace in the selection, we do not cut the EOL too
-		if (!isOnLastLine && !txt.match(/^\s*$/)) {
-			await vscode.commands.executeCommand("cursorMove", {to: "left", by: "character"})
-			endPos = this.getCurrentPos()
-		}
-
-		// Select it now, cut the selection, remember the position in case of multiple cuts from same spot
-		this.setSelection(startPos, endPos)
-		let promise = this.cut(this.lastKill != null && startPos.isEqual(this.lastKill))
-
-		promise.then(() => {
-			this.justDidKill = true
-			this.lastKill = startPos
+		vscode.commands.executeCommand("emacs.exitMarkMode")
+		vscode.commands.executeCommand("cursorMove", {
+			to:"wrappedLineEnd",
+			select:true
 		})
-
-		return promise
+		// editor.action.clipboardCutAction is too slow!
+		vscode.commands.executeCommand("editor.action.clipboardCopyAction");
+		vscode.commands.executeCommand("deleteAllRight");
 	}
 
 	copy(): void {
@@ -131,15 +107,9 @@ export class Editor {
 		vscode.commands.executeCommand("emacs.exitMarkMode")
 	}
 
-	cut(appendClipboard?: boolean): Thenable<boolean> {
-		if (appendClipboard) {
-			clip.writeSync(clip.readSync() + this.getSelectionText());
-		} else {
-			clip.writeSync(this.getSelectionText());
-		}
-		let t = Editor.delete(this.getSelectionRange());
-		vscode.commands.executeCommand("emacs.exitMarkMode");
-		return t
+	cut(): void {
+		vscode.commands.executeCommand("editor.action.clipboardCutAction")
+		Editor.inMarkMode = false
 	}
 
 	yank(): Thenable<{}> {

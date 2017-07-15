@@ -64,15 +64,18 @@ export class Editor {
 			if (jumpPosition.line - currentPosition.line != 0) {
 				vscode.commands.executeCommand("cursorMove", {
 					to:"down",
-					value:jumpPosition.line - currentPosition.line
+					value:jumpPosition.line - currentPosition.line,
 				})
 			}
-			if (jumpPosition.character - currentPosition.character != 0) {
-				vscode.commands.executeCommand("cursorMove", {
-					to:"right",
-					value:jumpPosition.character - currentPosition.character
-				})
-			}
+
+			vscode.commands.executeCommand("cursorMove", {
+				to:"wrappedLineStart",
+			})
+
+			vscode.commands.executeCommand("cursorMove", {
+				to:"right",
+				value:jumpPosition.character,
+			})
 		}
 	}
 

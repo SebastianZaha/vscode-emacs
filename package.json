@@ -48,6 +48,11 @@
             },
             {
                 "key": "ctrl+f",
+                "command": "emacs.cursorRight",
+                "when": "terminalFocus"
+            },
+            {
+                "key": "ctrl+f",
                 "command": "closeFindWidget",
                 "when": "editorFocus && findWidgetVisible"
             },

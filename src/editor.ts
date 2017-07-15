@@ -56,10 +56,6 @@ export class Editor {
 		return vscode.window.activeTextEditor.selection.active.line == vscode.window.activeTextEditor.document.lineCount - 1
 	}
 
-	apendPosition(position: vscode.Position) : void {
-		this.positions.push(position)
-	}
-
 	goBack() : void {
 		if (this.positions.length > 0) {
 			var jumpPosition = this.positions.pop()

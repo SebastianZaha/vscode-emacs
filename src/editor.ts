@@ -56,7 +56,7 @@ export class Editor {
 		return vscode.window.activeTextEditor.selection.active.line == vscode.window.activeTextEditor.document.lineCount - 1
 	}
 
-	goBack() : void {
+	goBack(select : boolean) : void {
 		if (this.positions.length > 0) {
 			var jumpPosition = this.positions.pop()
 			var currentPosition = vscode.window.activeTextEditor.selection.active;
@@ -65,16 +65,19 @@ export class Editor {
 				vscode.commands.executeCommand("cursorMove", {
 					to:"down",
 					value:jumpPosition.line - currentPosition.line,
+					select:select
 				})
 			}
 
 			vscode.commands.executeCommand("cursorMove", {
 				to:"wrappedLineStart",
+				select:select
 			})
 
 			vscode.commands.executeCommand("cursorMove", {
 				to:"right",
 				value:jumpPosition.character,
+				select:select
 			})
 		}
 	}

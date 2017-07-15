@@ -55,7 +55,10 @@ export class Operation {
                 this.editor.scrollLineToCenter()
             },
             'C-u_C-spc': () => {
-                this.editor.goBack()
+                this.editor.goBack(false)
+            },
+            'C-x_C-x': () => {
+                this.editor.goBack(true)
             }
         };
     }

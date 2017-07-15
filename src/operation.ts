@@ -1,4 +1,4 @@
-import {Editor} from './editor';
+import { Editor } from './editor';
 
 export class Operation {
     private editor: Editor;

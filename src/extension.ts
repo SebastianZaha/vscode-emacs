@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import {Operation} from './operation';
-import {Editor} from "./editor";
+import { Operation } from './operation';
+import { Editor } from "./editor";
 
 export function activate(context: vscode.ExtensionContext): void {
     let op = new Operation(),
@@ -31,12 +31,12 @@ export function activate(context: vscode.ExtensionContext): void {
 
     cursorMoves.forEach(element => {
         context.subscriptions.push(vscode.commands.registerCommand(
-            "emacs."+element, () => {
+            "emacs." + element, () => {
                 Editor.setMarkHasMoved(true);
                 vscode.commands.executeCommand(
                     Editor.getInMarkMode() ?
-                    element+"Select" :
-                    element
+                        element + "Select" :
+                        element
                 );
             })
         )
@@ -44,10 +44,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
     // 'type' is not an "emacs." command and should be registered separately
     context.subscriptions.push(vscode.commands.registerCommand("type", function (args) {
-		if (!vscode.window.activeTextEditor) {
-			return;
-		}
-		op.onType(args.text);
+        if (!vscode.window.activeTextEditor) {
+            return;
+        }
+        op.onType(args.text);
     }));
 }
 

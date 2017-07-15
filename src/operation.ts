@@ -7,6 +7,12 @@ export class Operation {
     constructor() {
         this.editor = new Editor();
         this.commandList = {
+            "enterMarkMode": () => {
+                this.editor.enterMarkMode()
+            },
+            "exitMarkMode": () => {
+                this.editor.exitMarkMode()
+            },
             'C-k': () => {
                 this.editor.kill();
             },

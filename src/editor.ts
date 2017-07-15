@@ -16,6 +16,24 @@ export class Editor {
 	private registersStorage: { [key:string] : RegisterContent; };
 	private lastKill: vscode.Position // if kill position stays the same, append to clipboard
 	private justDidKill: boolean
+	private static inMarkMode : boolean
+	private static markHasMoved : boolean
+
+	static getInMarkMode() : boolean {
+		return Editor.inMarkMode;
+	}
+
+	static setInMarkMode(val:boolean) : void {
+		Editor.inMarkMode = val;
+	}
+
+	static getMarkHasMoved() : boolean {
+		return Editor.markHasMoved;
+	}
+
+	static setMarkHasMoved(val:boolean) : void {
+		Editor.markHasMoved = val;
+	}
 
 	constructor() {
 		this.keybindProgressMode = KeybindProgressMode.None
@@ -334,5 +352,20 @@ export class Editor {
 		vscode.commands.executeCommand("lineBreakInsert");
 		vscode.commands.executeCommand("emacs.cursorHome");
 		vscode.commands.executeCommand("emacs.cursorDown");
+	}
+
+	enterMarkMode() :void {
+		if (Editor.inMarkMode && !Editor.markHasMoved) {
+			this.exitMarkMode();
+		} else {
+			this.exitMarkMode();
+			Editor.inMarkMode = true;
+			Editor.markHasMoved = false;
+		}
+	}
+
+	exitMarkMode() : void {
+		vscode.commands.executeCommand("cancelSelection");
+		Editor.inMarkMode = false;
 	}
 }

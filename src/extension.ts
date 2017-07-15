@@ -12,7 +12,7 @@ export function activate(context: vscode.ExtensionContext): void {
             "C-x_C-o", "C-x_u", "C-/", "C-j", "C-S_bs",
 
             // Navigation
-            "C-l",
+            "C-l", "C-u_C-spc",
 
             // R-Mode
             "C-x_r"

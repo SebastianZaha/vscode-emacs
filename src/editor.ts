@@ -17,6 +17,7 @@ export class Editor {
 	private justDidKill: boolean
 	private static inMarkMode : boolean = false
 	private static markHasMoved : boolean = false
+	private positions: Array<vscode.Position> = new Array();
 
 	static getInMarkMode() : boolean {
 		return Editor.inMarkMode;
@@ -53,6 +54,30 @@ export class Editor {
 
 	static isOnLastLine(): boolean {
 		return vscode.window.activeTextEditor.selection.active.line == vscode.window.activeTextEditor.document.lineCount - 1
+	}
+
+	apendPosition(position: vscode.Position) : void {
+		this.positions.push(position)
+	}
+
+	goBack() : void {
+		if (this.positions.length > 0) {
+			var jumpPosition = this.positions.pop()
+			var currentPosition = vscode.window.activeTextEditor.selection.active;
+
+			if (jumpPosition.line - currentPosition.line != 0) {
+				vscode.commands.executeCommand("cursorMove", {
+					to:"down",
+					value:jumpPosition.line - currentPosition.line
+				})
+			}
+			if (jumpPosition.character - currentPosition.character != 0) {
+				vscode.commands.executeCommand("cursorMove", {
+					to:"right",
+					value:jumpPosition.character - currentPosition.character
+				})
+			}
+		}
 	}
 
 	setStatusBarMessage(text: string): vscode.Disposable {
@@ -343,6 +368,7 @@ export class Editor {
 		if (Editor.inMarkMode && !Editor.markHasMoved) {
 			this.exitMarkMode();
 		} else {
+			this.positions.push(vscode.window.activeTextEditor.selection.active)
 			this.exitMarkMode();
 			Editor.inMarkMode = true;
 			Editor.markHasMoved = false;

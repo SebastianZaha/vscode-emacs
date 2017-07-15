@@ -53,6 +53,9 @@ export class Operation {
             },
             'C-l': () => {
                 this.editor.scrollLineToCenter()
+            },
+            'C-u_C-spc': () => {
+                this.editor.goBack()
             }
         };
     }

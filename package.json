@@ -656,6 +656,11 @@
             {
                 "key": "alt+backspace",
                 "command": "deleteWordLeft"
+            },
+            {
+                "key": "ctrl+u ctrl+space",
+                "command": "emacs.C-u_C-spc",
+                "when": "editorTextFocus"
             }
         ]
     },

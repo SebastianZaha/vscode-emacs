@@ -109,7 +109,7 @@ export class Editor {
 	}
 
 	copy(): void {
-		clip.writeSync(this.getSelectionText())
+		vscode.commands.executeCommand("editor.action.clipboardCopyAction")
 		vscode.commands.executeCommand("emacs.exitMarkMode")
 	}
 

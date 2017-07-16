@@ -46,7 +46,7 @@ export class Operation {
                 this.editor.setStatusBarMessage("Quit");
             },
             "C-S_bs": () => {
-                this.editor.deleteLine();
+                this.editor.killWholeLine();
             },
             "C-x_r": () => {
                 this.editor.setRMode();

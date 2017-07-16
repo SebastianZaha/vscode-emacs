@@ -530,6 +530,11 @@
             },
             {
                 "key": "ctrl+x ctrl+s",
+                "command": "workbench.action.files.saveAll",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+x s",
                 "command": "workbench.action.files.save",
                 "when": "editorTextFocus"
             },

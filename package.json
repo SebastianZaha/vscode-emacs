@@ -48,6 +48,11 @@
             },
             {
                 "key": "ctrl+f",
+                "command": "emacs.cursorRight",
+                "when": "terminalFocus"
+            },
+            {
+                "key": "ctrl+f",
                 "command": "closeFindWidget",
                 "when": "editorFocus && findWidgetVisible"
             },
@@ -306,6 +311,11 @@
                 "when": "editorFocus && findWidgetVisible"
             },
             {
+                "key": "alt+0 ctrl+k",
+                "command": "emacs.M-0_C-k",
+                "when": "editorTextFocus && !editorReadonly"
+            },
+            {
                 "key": "ctrl+k",
                 "command": "emacs.C-k",
                 "when": "editorTextFocus && !editorReadonly"
@@ -520,6 +530,11 @@
             },
             {
                 "key": "ctrl+x ctrl+s",
+                "command": "workbench.action.files.saveAll",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+x s",
                 "command": "workbench.action.files.save",
                 "when": "editorTextFocus"
             },
@@ -651,6 +666,16 @@
             {
                 "key": "alt+backspace",
                 "command": "deleteWordLeft"
+            },
+            {
+                "key": "ctrl+u ctrl+space",
+                "command": "emacs.C-u_C-spc",
+                "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+x ctrl+x",
+                "command": "emacs.C-x_C-x",
+                "when": "editorTextFocus"
             }
         ]
     },

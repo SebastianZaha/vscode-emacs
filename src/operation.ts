@@ -1,4 +1,4 @@
-import {Editor} from './editor';
+import { Editor } from './editor';
 
 export class Operation {
     private editor: Editor;
@@ -7,8 +7,17 @@ export class Operation {
     constructor() {
         this.editor = new Editor();
         this.commandList = {
+            "enterMarkMode": () => {
+                this.editor.enterMarkMode()
+            },
+            "exitMarkMode": () => {
+                this.editor.exitMarkMode()
+            },
             'C-k': () => {
-                this.editor.kill();
+                this.editor.killLineForward();
+            },
+            'M-0_C-k': () => {
+                this.editor.killLineBackward();
             },
             'C-w': () => {
                 this.editor.cut()
@@ -37,13 +46,19 @@ export class Operation {
                 this.editor.setStatusBarMessage("Quit");
             },
             "C-S_bs": () => {
-                this.editor.deleteLine();
+                this.editor.killWholeLine();
             },
             "C-x_r": () => {
                 this.editor.setRMode();
             },
             'C-l': () => {
                 this.editor.scrollLineToCenter()
+            },
+            'C-u_C-spc': () => {
+                this.editor.goBack(false)
+            },
+            'C-x_C-x': () => {
+                this.editor.goBack(true)
             }
         };
     }

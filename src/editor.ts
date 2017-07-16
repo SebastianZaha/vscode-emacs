@@ -1,338 +1,382 @@
 import * as vscode from 'vscode';
-import * as clip from 'clipboardy'
-import {RegisterContent, RectangleContent, RegisterKind} from './registers';
+import { RegisterContent, RectangleContent, RegisterKind } from './registers';
 
 enum KeybindProgressMode {
-	None,   // No current keybind is currently in progress
-	RMode,  // Rectangle and/or Register keybinding  [started by 'C-x+r'] is currently in progress
-	RModeS, // 'Save Region in register' keybinding [started by 'C-x+r+s'] is currently in progress
-	RModeI, // 'Insert Register content into buffer' keybinding [started by 'C-x+r+i'] is currently in progress
-	AMode,  // (FUTURE, TBD) Abbrev keybinding  [started by 'C-x+a'] is currently in progress
-	MacroRecordingMode  // (FUTURE, TBD) Emacs macro recording [started by 'Ctrl-x+('] is currently in progress
+    None,   // No current keybind is currently in progress
+    RMode,  // Rectangle and/or Register keybinding  [started by 'C-x+r'] is currently in progress
+    RModeS, // 'Save Region in register' keybinding [started by 'C-x+r+s'] is currently in progress
+    RModeI, // 'Insert Register content into buffer' keybinding [started by 'C-x+r+i'] is currently in progress
+    AMode,  // (FUTURE, TBD) Abbrev keybinding  [started by 'C-x+a'] is currently in progress
+    MacroRecordingMode  // (FUTURE, TBD) Emacs macro recording [started by 'Ctrl-x+('] is currently in progress
 };
 
 export class Editor {
-	private keybindProgressMode: KeybindProgressMode;
-	private registersStorage: { [key:string] : RegisterContent; };
-	private lastKill: vscode.Position // if kill position stays the same, append to clipboard
-	private justDidKill: boolean
+    private keybindProgressMode: KeybindProgressMode;
+    private registersStorage: { [key: string]: RegisterContent; };
+    private lastKill: vscode.Position // if kill position stays the same, append to clipboard
+    private justDidKill: boolean
+    private static inMarkMode: boolean = false
+    private static markHasMoved: boolean = false
+    private positions: Array<vscode.Position> = new Array();
 
-	constructor() {
-		this.keybindProgressMode = KeybindProgressMode.None
-		this.registersStorage = {}
-		this.justDidKill = false
-		this.lastKill = null
+    static getInMarkMode(): boolean {
+        return Editor.inMarkMode;
+    }
 
-		vscode.window.onDidChangeActiveTextEditor(event => {
-			this.lastKill = null
-		})
-		vscode.workspace.onDidChangeTextDocument(event => {
-			if (!this.justDidKill) {
-				this.lastKill = null
-			}
-			this.justDidKill = false
-		})
-	}
+    static setInMarkMode(val: boolean): void {
+        Editor.inMarkMode = val;
+    }
 
-	static isOnLastLine(): boolean {
-		return vscode.window.activeTextEditor.selection.active.line == vscode.window.activeTextEditor.document.lineCount - 1
-	}
+    static getMarkHasMoved(): boolean {
+        return Editor.markHasMoved;
+    }
 
-	setStatusBarMessage(text: string): vscode.Disposable {
-		return vscode.window.setStatusBarMessage(text, 1000);
-	}
+    static setMarkHasMoved(val: boolean): void {
+        Editor.markHasMoved = val;
+    }
 
-	setStatusBarPermanentMessage(text: string): vscode.Disposable {
-		return vscode.window.setStatusBarMessage(text);
-	}
+    constructor() {
+        this.keybindProgressMode = KeybindProgressMode.None
+        this.registersStorage = {}
+        this.justDidKill = false
+        this.lastKill = null
 
-	getSelectionRange(): vscode.Range {
-		let selection = vscode.window.activeTextEditor.selection,
-			start = selection.start,
-			end = selection.end;
+        vscode.window.onDidChangeActiveTextEditor(event => {
+            this.lastKill = null
+        })
+        vscode.workspace.onDidChangeTextDocument(event => {
+            if (!this.justDidKill) {
+                this.lastKill = null
+            }
+            this.justDidKill = false
+        })
+    }
 
-		return (start.character !== end.character || start.line !== end.line) ? new vscode.Range(start, end) : null;
-	}
+    static isOnLastLine(): boolean {
+        return vscode.window.activeTextEditor.selection.active.line == vscode.window.activeTextEditor.document.lineCount - 1
+    }
 
-	getSelection(): vscode.Selection {
-		return vscode.window.activeTextEditor.selection;
-	}
+    goBack(select: boolean): void {
+        if (this.positions.length > 0) {
+            var jumpPosition = this.positions.pop()
+            var currentPosition = vscode.window.activeTextEditor.selection.active;
 
-	getSelectionText(): string {
-		let r = this.getSelectionRange()
-		return r ? vscode.window.activeTextEditor.document.getText(r) : ''
-	}
+            if (jumpPosition.line - currentPosition.line != 0) {
+                vscode.commands.executeCommand("cursorMove", {
+                    to: "down",
+                    value: jumpPosition.line - currentPosition.line,
+                    select: select
+                })
+            }
 
-	setSelection(start: vscode.Position, end: vscode.Position): void {
-		let editor = vscode.window.activeTextEditor;
-		editor.selection = new vscode.Selection(start, end);
-	}
+            vscode.commands.executeCommand("cursorMove", {
+                to: "wrappedLineStart",
+                select: select
+            })
 
-	getCurrentPos(): vscode.Position {
-		return vscode.window.activeTextEditor.selection.active
-	}
+            vscode.commands.executeCommand("cursorMove", {
+                to: "right",
+                value: jumpPosition.character,
+                select: select
+            })
+        }
+    }
 
-	// Kill to end of line
-	async kill(): Promise<boolean> {
-		// Ignore whatever we have selected before
-		await vscode.commands.executeCommand("emacs.exitMarkMode")
+    setStatusBarMessage(text: string): vscode.Disposable {
+        return vscode.window.setStatusBarMessage(text, 1000);
+    }
 
-		let startPos = this.getCurrentPos(),
-			isOnLastLine = Editor.isOnLastLine()
+    setStatusBarPermanentMessage(text: string): vscode.Disposable {
+        return vscode.window.setStatusBarMessage(text);
+    }
 
-		// Move down an entire line (not just the wrapped part), and to the beginning.
-		await vscode.commands.executeCommand("cursorMove", { to: "down", by: "line", select: false })
-		if (!isOnLastLine) {
-			await vscode.commands.executeCommand("cursorMove", { to: "wrappedLineStart" })
-		}
+    getSelectionRange(): vscode.Range {
+        let selection = vscode.window.activeTextEditor.selection,
+            start = selection.start,
+            end = selection.end;
 
-		let endPos = this.getCurrentPos(),
-			range = new vscode.Range(startPos, endPos),
-			txt = vscode.window.activeTextEditor.document.getText(range)
+        return (start.character !== end.character || start.line !== end.line) ? new vscode.Range(start, end) : null;
+    }
 
-		// If there is something other than whitespace in the selection, we do not cut the EOL too
-		if (!isOnLastLine && !txt.match(/^\s*$/)) {
-			await vscode.commands.executeCommand("cursorMove", {to: "left", by: "character"})
-			endPos = this.getCurrentPos()
-		}
+    getSelection(): vscode.Selection {
+        return vscode.window.activeTextEditor.selection;
+    }
 
-		// Select it now, cut the selection, remember the position in case of multiple cuts from same spot
-		this.setSelection(startPos, endPos)
-		let promise = this.cut(this.lastKill != null && startPos.isEqual(this.lastKill))
+    getSelectionText(): string {
+        let r = this.getSelectionRange()
+        return r ? vscode.window.activeTextEditor.document.getText(r) : ''
+    }
 
-		promise.then(() => {
-			this.justDidKill = true
-			this.lastKill = startPos
-		})
+    setSelection(start: vscode.Position, end: vscode.Position): void {
+        let editor = vscode.window.activeTextEditor;
+        editor.selection = new vscode.Selection(start, end);
+    }
 
-		return promise
-	}
+    getCurrentPos(): vscode.Position {
+        return vscode.window.activeTextEditor.selection.active
+    }
 
-	copy(): void {
-		clip.writeSync(this.getSelectionText())
-		vscode.commands.executeCommand("emacs.exitMarkMode")
-	}
+    // Kill to end of line
+    killLineForward(): void {
+        // Ignore whatever we have selected before
+        vscode.commands.executeCommand("emacs.exitMarkMode")
+        // move cursor to the end of the line and select the text
+        vscode.commands.executeCommand("cursorMove", {
+            to: "wrappedLineEnd",
+            select: true
+        })
+        // editor.action.clipboardCutAction is too slow!
+        vscode.commands.executeCommand("editor.action.clipboardCopyAction");
+        vscode.commands.executeCommand("deleteAllRight");
+    }
 
-	cut(appendClipboard?: boolean): Thenable<boolean> {
-		if (appendClipboard) {
-			clip.writeSync(clip.readSync() + this.getSelectionText());
-		} else {
-			clip.writeSync(this.getSelectionText());
-		}
-		let t = Editor.delete(this.getSelectionRange());
-		vscode.commands.executeCommand("emacs.exitMarkMode");
-		return t
-	}
+    // Kill to beginning of line
+    killLineBackward(): void {
+        // Ignore whatever we have selected before
+        vscode.commands.executeCommand("emacs.exitMarkMode")
+        // move cursor to the beginning of the line and select the text
+        vscode.commands.executeCommand("cursorMove", {
+            to: "wrappedLineStart",
+            select: true
+        })
+        // editor.action.clipboardCutAction is too slow!
+        vscode.commands.executeCommand("editor.action.clipboardCopyAction");
+        vscode.commands.executeCommand("deleteAllLeft");
+    }
 
-	yank(): Thenable<{}> {
-		this.justDidKill = false
-		return Promise.all([
-			vscode.commands.executeCommand("editor.action.clipboardPasteAction"),
-			vscode.commands.executeCommand("emacs.exitMarkMode")])
-	}
+    copy(): void {
+        vscode.commands.executeCommand("editor.action.clipboardCopyAction")
+        vscode.commands.executeCommand("emacs.exitMarkMode")
+    }
 
-	undo(): void {
-		vscode.commands.executeCommand("undo");
-	}
+    cut(): void {
+        vscode.commands.executeCommand("editor.action.clipboardCutAction")
+        Editor.inMarkMode = false
+    }
 
-	private getFirstBlankLine(range: vscode.Range): vscode.Range {
-		let doc = vscode.window.activeTextEditor.document;
+    yank(): Thenable<{}> {
+        this.justDidKill = false
+        return Promise.all([
+            vscode.commands.executeCommand("editor.action.clipboardPasteAction"),
+            vscode.commands.executeCommand("emacs.exitMarkMode")])
+    }
 
-		if (range.start.line === 0) {
-			return range;
-		}
-		range = doc.lineAt(range.start.line - 1).range;
-		while (range.start.line > 0 && range.isEmpty) {
-			range = doc.lineAt(range.start.line - 1).range;
-		}
-		if (range.isEmpty) {
-			return range;
-		} else {
-			return doc.lineAt(range.start.line + 1).range;
-		}
-	}
+    undo(): void {
+        vscode.commands.executeCommand("undo");
+    }
 
-	async deleteBlankLines() {
-		let selection = this.getSelection(),
-			anchor = selection.anchor,
-			doc = vscode.window.activeTextEditor.document,
-			range = doc.lineAt(selection.start.line).range,
-			nextLine: vscode.Position;
+    private getFirstBlankLine(range: vscode.Range): vscode.Range {
+        let doc = vscode.window.activeTextEditor.document;
 
-		if (range.isEmpty) {
-			range = this.getFirstBlankLine(range);
-			anchor = range.start;
-			nextLine = range.start;
-		} else {
-			nextLine = range.start.translate(1, 0);
-		}
-		selection = new vscode.Selection(nextLine, nextLine);
-		vscode.window.activeTextEditor.selection = selection;
+        if (range.start.line === 0) {
+            return range;
+        }
+        range = doc.lineAt(range.start.line - 1).range;
+        while (range.start.line > 0 && range.isEmpty) {
+            range = doc.lineAt(range.start.line - 1).range;
+        }
+        if (range.isEmpty) {
+            return range;
+        } else {
+            return doc.lineAt(range.start.line + 1).range;
+        }
+    }
 
-		for (let line = selection.start.line;
-				line < doc.lineCount - 1  && doc.lineAt(line).range.isEmpty;
-		    	++line) {
+    async deleteBlankLines() {
+        let selection = this.getSelection(),
+            anchor = selection.anchor,
+            doc = vscode.window.activeTextEditor.document,
+            range = doc.lineAt(selection.start.line).range,
+            nextLine: vscode.Position;
 
-			await vscode.commands.executeCommand("deleteRight")
-		}
-		vscode.window.activeTextEditor.selection = new vscode.Selection(anchor, anchor)
-	}
+        if (range.isEmpty) {
+            range = this.getFirstBlankLine(range);
+            anchor = range.start;
+            nextLine = range.start;
+        } else {
+            nextLine = range.start.translate(1, 0);
+        }
+        selection = new vscode.Selection(nextLine, nextLine);
+        vscode.window.activeTextEditor.selection = selection;
 
-	static delete(range: vscode.Range = null): Thenable<boolean> {
-		if (range) {
-			return vscode.window.activeTextEditor.edit(editBuilder => {
-				editBuilder.delete(range);
-			});
-		}
-	}
+        for (let line = selection.start.line;
+            line < doc.lineCount - 1 && doc.lineAt(line).range.isEmpty;
+            ++line) {
 
-	setRMode(): void {
-		this.setStatusBarPermanentMessage("C-x r");
-		this.keybindProgressMode = KeybindProgressMode.RMode;
-		return;
-	}
+            await vscode.commands.executeCommand("deleteRight")
+        }
+        vscode.window.activeTextEditor.selection = new vscode.Selection(anchor, anchor)
+    }
 
-	onType(text: string): void {
-		let fHandled = false;
-		switch(this.keybindProgressMode)
-		{
-			case KeybindProgressMode.RMode:
-				switch (text)
-				{
-					// Rectangles
-					case 'r':
-						this.setStatusBarMessage("'C-x r r' (Copy rectangle to register) is not supported.");
-						this.keybindProgressMode = KeybindProgressMode.None;
-						fHandled = true;
-						break;
+    static delete(range: vscode.Range = null): Thenable<boolean> {
+        if (range) {
+            return vscode.window.activeTextEditor.edit(editBuilder => {
+                editBuilder.delete(range);
+            });
+        }
+    }
 
-					case 'k':
-						this.setStatusBarMessage("'C-x r k' (Kill rectangle) is not supported.");
-						this.keybindProgressMode = KeybindProgressMode.None;
-						fHandled = true;
-						break;
+    setRMode(): void {
+        this.setStatusBarPermanentMessage("C-x r");
+        this.keybindProgressMode = KeybindProgressMode.RMode;
+        return;
+    }
 
-					case 'y':
-						this.setStatusBarMessage("'C-x r y' (Yank rectangle) is not supported.");
-						this.keybindProgressMode = KeybindProgressMode.None;
-						fHandled = true;
-						break;
+    onType(text: string): void {
+        let fHandled = false;
+        switch (this.keybindProgressMode) {
+            case KeybindProgressMode.RMode:
+                switch (text) {
+                    // Rectangles
+                    case 'r':
+                        this.setStatusBarMessage("'C-x r r' (Copy rectangle to register) is not supported.");
+                        this.keybindProgressMode = KeybindProgressMode.None;
+                        fHandled = true;
+                        break;
 
-					case 'o':
-						this.setStatusBarMessage("'C-x r o' (Open rectangle) is not supported.");
-						this.keybindProgressMode = KeybindProgressMode.None;
-						fHandled = true;
-						break;
+                    case 'k':
+                        this.setStatusBarMessage("'C-x r k' (Kill rectangle) is not supported.");
+                        this.keybindProgressMode = KeybindProgressMode.None;
+                        fHandled = true;
+                        break;
 
-					case 'c':
-						this.setStatusBarMessage("'C-x r c' (Blank out rectangle) is not supported.");
-						this.keybindProgressMode = KeybindProgressMode.None;
-						fHandled = true;
-						break;
+                    case 'y':
+                        this.setStatusBarMessage("'C-x r y' (Yank rectangle) is not supported.");
+                        this.keybindProgressMode = KeybindProgressMode.None;
+                        fHandled = true;
+                        break;
 
-					case 't':
-						this.setStatusBarMessage("'C-x r t' (prefix each line with a string) is not supported.");
-						this.keybindProgressMode = KeybindProgressMode.None;
-						fHandled = true;
-						break;
+                    case 'o':
+                        this.setStatusBarMessage("'C-x r o' (Open rectangle) is not supported.");
+                        this.keybindProgressMode = KeybindProgressMode.None;
+                        fHandled = true;
+                        break;
 
-					// Registers
-					case 's':
-						this.setStatusBarPermanentMessage("Copy to register:");
-						this.keybindProgressMode = KeybindProgressMode.RModeS;
-						fHandled = true;
-						break;
+                    case 'c':
+                        this.setStatusBarMessage("'C-x r c' (Blank out rectangle) is not supported.");
+                        this.keybindProgressMode = KeybindProgressMode.None;
+                        fHandled = true;
+                        break;
 
-					case 'i':
-						this.setStatusBarPermanentMessage("Insert register:");
-						this.keybindProgressMode = KeybindProgressMode.RModeI;
-						fHandled = true;
-						break;
+                    case 't':
+                        this.setStatusBarMessage("'C-x r t' (prefix each line with a string) is not supported.");
+                        this.keybindProgressMode = KeybindProgressMode.None;
+                        fHandled = true;
+                        break;
 
-					default:
-						break;
-				}
-				break;
+                    // Registers
+                    case 's':
+                        this.setStatusBarPermanentMessage("Copy to register:");
+                        this.keybindProgressMode = KeybindProgressMode.RModeS;
+                        fHandled = true;
+                        break;
 
-			case KeybindProgressMode.RModeS:
-				this.setStatusBarPermanentMessage("");
-				this.saveTextToRegister(text);
-				this.keybindProgressMode = KeybindProgressMode.None;
-				fHandled = true;
-				break;
+                    case 'i':
+                        this.setStatusBarPermanentMessage("Insert register:");
+                        this.keybindProgressMode = KeybindProgressMode.RModeI;
+                        fHandled = true;
+                        break;
 
-			case KeybindProgressMode.RModeI:
-				this.setStatusBarPermanentMessage("");
-				this.restoreTextFromRegister(text);
-				this.keybindProgressMode = KeybindProgressMode.None;
-				fHandled = true;
-				break;
+                    default:
+                        break;
+                }
+                break;
 
-			case KeybindProgressMode.AMode: // not supported [yet]
-			case KeybindProgressMode.MacroRecordingMode: // not supported [yet]
-			case KeybindProgressMode.None:
-			default:
-				this.keybindProgressMode = KeybindProgressMode.None;
-				this.setStatusBarPermanentMessage("");
-				break;
-		}
+            case KeybindProgressMode.RModeS:
+                this.setStatusBarPermanentMessage("");
+                this.saveTextToRegister(text);
+                this.keybindProgressMode = KeybindProgressMode.None;
+                fHandled = true;
+                break;
 
-		if (!fHandled) {
-			// default input handling: pass control to VSCode
-			vscode.commands.executeCommand('default:type', {
-				text: text
-			});
-		}
-		return;
-	}
+            case KeybindProgressMode.RModeI:
+                this.setStatusBarPermanentMessage("");
+                this.restoreTextFromRegister(text);
+                this.keybindProgressMode = KeybindProgressMode.None;
+                fHandled = true;
+                break;
 
-	saveTextToRegister(registerName: string): void {
-		if (null === registerName) {
-			return;
-		}
-		let range : vscode.Range = this.getSelectionRange();
-		if (range !== null) {
-			let selectedText = vscode.window.activeTextEditor.document.getText(range);
-			if (null !== selectedText) {
-				this.registersStorage[registerName] = RegisterContent.fromRegion(selectedText);
-			}
-		}
-		return;
-	}
+            case KeybindProgressMode.AMode: // not supported [yet]
+            case KeybindProgressMode.MacroRecordingMode: // not supported [yet]
+            case KeybindProgressMode.None:
+            default:
+                this.keybindProgressMode = KeybindProgressMode.None;
+                this.setStatusBarPermanentMessage("");
+                break;
+        }
 
-	restoreTextFromRegister(registerName: string): void {
-		vscode.commands.executeCommand("emacs.exitMarkMode"); // emulate Emacs
-		let obj : RegisterContent = this.registersStorage[registerName];
-		if (null === obj) {
-			this.setStatusBarMessage("Register does not contain text.");
-			return;
-		}
-		if (RegisterKind.KText === obj.getRegisterKind()) {
-			const content : string | vscode.Position | RectangleContent = obj.getRegisterContent();
-			if (typeof content === 'string') {
-				vscode.window.activeTextEditor.edit(editBuilder => {
-					editBuilder.insert(this.getSelection().active, content);
-				});
-			}
-		}
-		return;
-	}
+        if (!fHandled) {
+            // default input handling: pass control to VSCode
+            vscode.commands.executeCommand('default:type', {
+                text: text
+            });
+        }
+        return;
+    }
 
-	deleteLine() : void {
-		vscode.commands.executeCommand("emacs.exitMarkMode"); // emulate Emacs
-		vscode.commands.executeCommand("editor.action.deleteLines");
-	}
+    saveTextToRegister(registerName: string): void {
+        if (null === registerName) {
+            return;
+        }
+        let range: vscode.Range = this.getSelectionRange();
+        if (range !== null) {
+            let selectedText = vscode.window.activeTextEditor.document.getText(range);
+            if (null !== selectedText) {
+                this.registersStorage[registerName] = RegisterContent.fromRegion(selectedText);
+            }
+        }
+        return;
+    }
 
-	scrollLineToCenter() {
-		const editor = vscode.window.activeTextEditor
-		const selection = editor.selection
-		const range = new vscode.Range(selection.start, selection.end)
-		editor.revealRange(range, vscode.TextEditorRevealType.InCenter)
-	}
+    restoreTextFromRegister(registerName: string): void {
+        vscode.commands.executeCommand("emacs.exitMarkMode"); // emulate Emacs
+        let obj: RegisterContent = this.registersStorage[registerName];
+        if (null === obj) {
+            this.setStatusBarMessage("Register does not contain text.");
+            return;
+        }
+        if (RegisterKind.KText === obj.getRegisterKind()) {
+            const content: string | vscode.Position | RectangleContent = obj.getRegisterContent();
+            if (typeof content === 'string') {
+                vscode.window.activeTextEditor.edit(editBuilder => {
+                    editBuilder.insert(this.getSelection().active, content);
+                });
+            }
+        }
+        return;
+    }
 
-	breakLine() {
-		vscode.commands.executeCommand("lineBreakInsert");
-		vscode.commands.executeCommand("emacs.cursorHome");
-		vscode.commands.executeCommand("emacs.cursorDown");
-	}
+    killWholeLine(): void {
+        vscode.commands.executeCommand("emacs.exitMarkMode"); // emulate Emacs
+        vscode.commands.executeCommand("editor.action.clipboardCutAction")
+    }
+
+    scrollLineToCenter() {
+        const editor = vscode.window.activeTextEditor
+        const selection = editor.selection
+        const range = new vscode.Range(selection.start, selection.end)
+        editor.revealRange(range, vscode.TextEditorRevealType.InCenter)
+    }
+
+    breakLine() {
+        vscode.commands.executeCommand("lineBreakInsert");
+        vscode.commands.executeCommand("emacs.cursorHome");
+        vscode.commands.executeCommand("emacs.cursorDown");
+    }
+
+    enterMarkMode(): void {
+        if (Editor.inMarkMode && !Editor.markHasMoved) {
+            this.exitMarkMode();
+        } else {
+            this.positions.push(vscode.window.activeTextEditor.selection.active)
+            this.exitMarkMode();
+            Editor.inMarkMode = true;
+            Editor.markHasMoved = false;
+        }
+    }
+
+    exitMarkMode(): void {
+        vscode.commands.executeCommand("cancelSelection");
+        Editor.inMarkMode = false;
+    }
 }

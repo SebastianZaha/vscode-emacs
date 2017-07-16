@@ -14,10 +14,10 @@ export class Operation {
                 this.editor.exitMarkMode()
             },
             'C-k': () => {
-                this.editor.killForward();
+                this.editor.killLineForward();
             },
             'M-0_C-k': () => {
-                this.editor.killBackward();
+                this.editor.killLineBackward();
             },
             'C-w': () => {
                 this.editor.cut()

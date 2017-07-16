@@ -117,7 +117,7 @@ export class Editor {
     }
 
     // Kill to end of line
-    killForward(): void {
+    killLineForward(): void {
         // Ignore whatever we have selected before
         vscode.commands.executeCommand("emacs.exitMarkMode")
         // move cursor to the end of the line and select the text
@@ -131,7 +131,7 @@ export class Editor {
     }
 
     // Kill to beginning of line
-    killBackward(): void {
+    killLineBackward(): void {
         // Ignore whatever we have selected before
         vscode.commands.executeCommand("emacs.exitMarkMode")
         // move cursor to the beginning of the line and select the text

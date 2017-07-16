@@ -348,7 +348,7 @@ export class Editor {
 
     deleteLine(): void {
         vscode.commands.executeCommand("emacs.exitMarkMode"); // emulate Emacs
-        vscode.commands.executeCommand("editor.action.deleteLines");
+        vscode.commands.executeCommand("editor.action.clipboardCutAction")
     }
 
     scrollLineToCenter() {

@@ -650,7 +650,8 @@
             },
             {
                 "key": "alt+backspace",
-                "command": "deleteWordLeft"
+                "command": "deleteWordLeft",
+                "when": "editorTextFocus && !editorReadonly"
             }
         ]
     },

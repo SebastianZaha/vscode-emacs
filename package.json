@@ -606,6 +606,7 @@
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
         "compile": "tsc -watch -p ./",
+        "build": "node build.js && tsc -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "lint": "tslint -p tslint.json --type-check **/*.ts"
     },

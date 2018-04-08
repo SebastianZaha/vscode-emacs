@@ -197,6 +197,10 @@
                 "when": "editorFocus && findWidgetVisible"
             },
             {
+                "key": "alt+shift+1",
+                "command": "emacs.shellCommand"
+            },
+            {
                 "key": "alt+g g",
                 "command": "workbench.action.gotoLine"
             },
@@ -247,6 +251,16 @@
                 "key": "ctrl+alt+n",
                 "command": "editor.action.addSelectionToNextFindMatch",
                 "when": "editorFocus"
+            },
+            {
+                "key": "backspace",
+                "command": "emacs.deleteLeft",
+                "when": "editorTextFocus && !editorReadonly"
+            },
+            {
+                "key": "delete",
+                "command": "emacs.deleteRight",
+                "when": "editorTextFocus && !editorReadonly"
             },
             {
                 "key": "ctrl+d",

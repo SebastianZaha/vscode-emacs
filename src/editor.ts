@@ -189,6 +189,36 @@ export class Editor {
 		vscode.commands.executeCommand("editor.action.deleteLines");
 	}
 
+
+	/**
+	 * The <backspace> and <delete> keys should always leave
+	 * the MarkMode whenever.
+	 */
+	deleteLeft() : void {
+		const selectionText = this.getSelectionText();
+		// if nothing is selected we should deleteLeft
+		if (selectionText.length == 0) {
+			vscode.commands.executeCommand('deleteLeft');
+		} else {
+			// or else we delete the selection
+			Editor.delete(this.getSelectionRange());
+		}
+		// in both case we should leave the MarkMode (this is very important)
+		vscode.commands.executeCommand('emacs.exitMarkMode');
+	}
+	deleteRight() : void {
+		const selectionText = this.getSelectionText();
+		// if nothing is selected we should deleteRight
+		if (selectionText.length == 0) {
+			vscode.commands.executeCommand('deleteRight');
+		} else {
+			// or else we delete the selection
+			Editor.delete(this.getSelectionRange());
+		}
+		// in both case we should leave the MarkMode (this is very important)
+		vscode.commands.executeCommand('emacs.exitMarkMode');
+	}
+
 	scrollLineToCenterTopBottom = () => {
 		const editor = vscode.window.activeTextEditor
 		const selection = editor.selection

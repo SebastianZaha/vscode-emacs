@@ -113,7 +113,7 @@ The following are some of the changes and enhancements from the original:
 
 ## Activate the alt+shift+1 **Terminal support**
 In order to toggle the "minibuffer" terminal, add this to your `settings.json` :
-```
+```json
 "terminal.integrated.commandsToSkipShell": [
   "emacs.shellCommand"
 ]

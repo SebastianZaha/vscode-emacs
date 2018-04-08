@@ -1,15 +1,11 @@
 import {Editor} from './editor';
-import {Workspace} from './workspace';
 
 export class Operation {
     private editor: Editor;
-    private workspace: Workspace;
     private commandList: { [key: string]: (...args: any[]) => any, thisArgs?: any } = {};
 
     constructor() {
         this.editor = new Editor();
-        this.workspace = new Workspace();
-
         this.commandList = {
             'C-k': () => {
                 this.editor.kill();
@@ -47,9 +43,7 @@ export class Operation {
                 this.editor.scrollLineToCenterTopBottom()
             },
             'deleteLeft': () => {this.editor.deleteLeft()},
-            'deleteRight': () => {this.editor.deleteRight()},
-
-            'shellCommand': () => {this.workspace.toggleTerminal()}
+            'deleteRight': () => {this.editor.deleteRight()}
         };
     }
 

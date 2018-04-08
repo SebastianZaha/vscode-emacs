@@ -249,6 +249,16 @@
                 "when": "editorFocus"
             },
             {
+                "key": "backspace",
+                "command": "emacs.deleteLeft",
+                "when": "editorTextFocus && !editorReadonly"
+            },
+            {
+                "key": "delete",
+                "command": "emacs.deleteRight",
+                "when": "editorTextFocus && !editorReadonly"
+            },
+            {
                 "key": "ctrl+d",
                 "command": "deleteRight",
                 "when": "editorTextFocus && !editorReadonly"

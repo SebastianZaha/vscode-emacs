@@ -11,7 +11,7 @@ The following are some of the changes and enhancements from the original:
 * C+l centers screen on the cursor line
 * C+x C+f bound to quick open file
 * yank overwrites selection
-
+* Terminal access using `M-!` (Alt+Shift+1)
 
 ### Move commands
 |Command | Desc |
@@ -109,6 +109,16 @@ The following are some of the changes and enhancements from the original:
 - `ctrl+/`: editor.action.commentLine => **Use `ctrl+;` instead**;
 - `ctrl+p` & `ctrl+e`: workbench.action.quickOpen => **Use `ctrl+x b` instead**;
 - `ctrl+p`: workbench.action.quickOpenNavigateNext => **Use `ctrl+n` instead**.
+
+
+## Activate the alt+shift+1 **Terminal support**
+In order to toggle the "minibuffer" terminal, add this to your `settings.json` :
+```
+"terminal.integrated.commandsToSkipShell": [
+  "emacs.shellCommand"
+]
+```
+Now you can toggle a terminal using `alt+shift+1`, just like in Emacs for quick access.
 
 # More information
 

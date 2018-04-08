@@ -14,7 +14,7 @@ export function activate(context: vscode.ExtensionContext): void {
             "deleteLeft", "deleteRight",
 
             // Navigation
-            "C-l"
+            "C-l", "shellCommand"
         ],
         cursorMoves: string[] = [
             "cursorUp", "cursorDown", "cursorLeft", "cursorRight",

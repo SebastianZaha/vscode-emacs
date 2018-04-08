@@ -197,6 +197,10 @@
                 "when": "editorFocus && findWidgetVisible"
             },
             {
+                "key": "alt+shift+1",
+                "command": "emacs.shellCommand"
+            },
+            {
                 "key": "alt+g g",
                 "command": "workbench.action.gotoLine"
             },

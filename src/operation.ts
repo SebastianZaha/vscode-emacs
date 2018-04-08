@@ -41,7 +41,9 @@ export class Operation {
             },
             'C-l': () => {
                 this.editor.scrollLineToCenterTopBottom()
-            }
+            },
+            'deleteLeft': () => {this.editor.deleteLeft()},
+            'deleteRight': () => {this.editor.deleteRight()}
         };
     }
 

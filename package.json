@@ -47,6 +47,11 @@
                 "when": "terminalFocus"
             },
             {
+                "key": "ctrl+f",
+                "command": "closeFindWidget",
+                "when": "editorFocus && findWidgetVisible"
+            },
+            {
                 "key": "left",
                 "command": "emacs.cursorLeft",
                 "when": "editorTextFocus"
@@ -55,6 +60,11 @@
                 "key": "ctrl+b",
                 "command": "emacs.cursorLeft",
                 "when": "editorTextFocus"
+            },
+            {
+                "key": "ctrl+b",
+                "command": "closeFindWidget",
+                "when": "editorFocus && findWidgetVisible"
             },
             {
                 "key": "up",
@@ -112,6 +122,11 @@
                 "when": "editorTextFocus"
             },
             {
+                "key": "ctrl+a",
+                "command": "closeFindWidget",
+                "when": "editorFocus && findWidgetVisible"
+            },
+            {
                 "key": "end",
                 "command": "emacs.cursorEnd",
                 "when": "editorTextFocus"
@@ -125,6 +140,11 @@
                 "key": "ctrl+e",
                 "command": "emacs.cursorEnd",
                 "when": "terminalFocus"
+            },
+            {
+                "key": "ctrl+e",
+                "command": "closeFindWidget",
+                "when": "editorFocus && findWidgetVisible"
             },
             {
                 "key": "alt+f",

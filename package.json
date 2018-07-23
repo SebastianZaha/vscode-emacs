@@ -265,6 +265,11 @@
             },
             {
                 "key": "ctrl+s",
+                "command": "actions.find",
+                "when": "textInputFocus && findWidgetVisible"
+            },
+            {
+                "key": "ctrl+s",
                 "command": "editor.action.nextMatchFindAction",
                 "when": "findWidgetVisible"
             },
@@ -272,6 +277,11 @@
                 "key": "ctrl+r",
                 "command": "actions.find",
                 "when": "!findWidgetVisible"
+            },
+            {
+                "key": "ctrl+r",
+                "command": "actions.find",
+                "when": "textInputFocus && findWidgetVisible"
             },
             {
                 "key": "ctrl+r",

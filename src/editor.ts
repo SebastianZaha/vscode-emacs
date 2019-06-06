@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as clip from 'clipboardy'
 
 // Possible positions when C-l is invoked consequtively
 enum RecenterPosition {
@@ -107,15 +106,15 @@ export class Editor {
 	}
 
 	copy(): void {
-		clip.writeSync(this.getSelectionText())
+		vscode.env.clipboard.writeText(this.getSelectionText())
 		vscode.commands.executeCommand("emacs.exitMarkMode")
 	}
 
 	cut(appendClipboard?: boolean): Thenable<boolean> {
 		if (appendClipboard) {
-			clip.writeSync(clip.readSync() + this.getSelectionText());
+			vscode.env.clipboard.writeText(vscode.env.clipboard.readText() + this.getSelectionText())
 		} else {
-			clip.writeSync(this.getSelectionText());
+			vscode.env.clipboard.writeText(this.getSelectionText())
 		}
 		let t = Editor.delete(this.getSelectionRange());
 		vscode.commands.executeCommand("emacs.exitMarkMode");

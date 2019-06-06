@@ -1,3 +1,6 @@
+## 0.8.3 (2019-06-06)
+- FIX work with remove development
+
 ## 0.8.2 (2017-10-09)
 - Fix replaceOne shortcut to correctly only replace the currently selected match
 

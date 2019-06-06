@@ -11,6 +11,7 @@ export class Editor {
 	private lastKill: vscode.Position // if kill position stays the same, append to clipboard
 	private justDidKill: boolean
 	private centerState: RecenterPosition
+	private killInProgress: boolean
 
 	constructor() {
 		this.justDidKill = false
@@ -71,6 +72,10 @@ export class Editor {
 
 	// Kill to end of line
 	async kill(): Promise<boolean> {
+		if (this.killInProgress) {
+			return null;
+		}
+		this.killInProgress = true
 		// Ignore whatever we have selected before
 		await vscode.commands.executeCommand("emacs.exitMarkMode")
 
@@ -100,6 +105,7 @@ export class Editor {
 		promise.then(() => {
 			this.justDidKill = true
 			this.lastKill = startPos
+			this.killInProgress = false
 		})
 
 		return promise

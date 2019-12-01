@@ -122,11 +122,10 @@ export class Editor {
 		return t
 	}
 
-	yank(): Thenable<{}> {
+	async yank(): Promise<boolean> {
 		this.justDidKill = false
-		return Promise.all([
-			vscode.commands.executeCommand("editor.action.clipboardPasteAction"),
-			vscode.commands.executeCommand("emacs.exitMarkMode")])
+		await vscode.commands.executeCommand("editor.action.clipboardPasteAction");
+		return vscode.commands.executeCommand("emacs.exitMarkMode")
 	}
 
 	undo(): void {
